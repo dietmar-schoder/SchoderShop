@@ -2,42 +2,43 @@ using SchoderChain;
 using SchoderShop.Helpers;
 using Stripe.Checkout;
 
-namespace SchoderShop.BLL
+namespace SchoderShop.BLL.StripeSession
 {
     public class CreateStripeCheckoutSession : Processor
     {
         private readonly IDateTimeFactory _dateTimeFactory;
-        private readonly ShopData _shopData;
+        private readonly StripeData _stripeData;
 
-        public CreateStripeCheckoutSession(IDateTimeFactory dateTimeFactory, ShopData shopData, ChainData chainData, ISlackManager slackManager)
+        public CreateStripeCheckoutSession(IDateTimeFactory dateTimeFactory, StripeData stripeData, ChainData chainData, ISlackManager slackManager)
             : base(chainData, slackManager)
         {
             _dateTimeFactory = dateTimeFactory;
-            _shopData = shopData;
+            _stripeData = stripeData;
         }
 
 #pragma warning disable 1998
         protected override async Task<bool> ProcessOkAsync()
         {
 #pragma warning restore CS1998
-            _shopData.StripeCheckoutSession = new SessionService().Create(GetSessionCreateOptions());
-            return _shopData.StripeCheckoutSession is not null;
+            _stripeData.StripeCheckoutSession = new SessionService().Create(GetSessionCreateOptions());
+            return _stripeData.StripeCheckoutSession is not null;
 
             SessionCreateOptions GetSessionCreateOptions()
             {
                 return GetStripeSessionCreateOptions
                 (
-                    customerEmail: _shopData.Account?.Email ?? _shopData.Email,
-                    productId: _shopData.Product.Id,
-                    name: _shopData.Product.Title,
-                    description: _shopData.Product.ShortDescription ?? _shopData.Product.Title,
-                    imageFile: _shopData.Product.ImgFileName800Jpg,
-                    priceInPence: _shopData.Product.PriceInPence,
-                    quantity: 1,
+                    customerEmail: _stripeData.Email, //_stripeData.Account?.Email ?? _stripeData.Email,
+                    productId: _stripeData.Product.Id,
+                    name: _stripeData.Product.Title,
+                    description: _stripeData.Product.ShortDescription ?? _stripeData.Product.Title,
+                    imageFile: _stripeData.Product.ImageFileName,
+                    priceAsInteger: _stripeData.Product.PriceAsInteger,
+                    currency: _stripeData.Currency,
+                    quantity: _stripeData.Quantity,
                     dateTime: _dateTimeFactory.UtcNow,
                     schoderUrl: Constants.MYHOMEPAGE_URL_LIVE,
-                    cancelUrl: _shopData.CancelUrl,
-                    successUrl: _shopData.SuccessUrl
+                    cancelUrl: _stripeData.CancelUrl,
+                    successUrl: _stripeData.SuccessUrl
                 );
             }
 
@@ -48,7 +49,8 @@ namespace SchoderShop.BLL
                 Guid productId,
                 string schoderUrl,
                 string imageFile,
-                long? priceInPence,
+                long? priceAsInteger,
+                string currency,
                 string cancelUrl,
                 string successUrl,
                 string customerEmail,
@@ -70,8 +72,8 @@ namespace SchoderShop.BLL
                                     Metadata = new Dictionary<string, string> { { "product_id", productId.ToString() } },
                                     Images = new List<string> { $@"{schoderUrl}img/{imageFile}" }
                                 },
-                                UnitAmount = priceInPence,
-                                Currency = "gbp"
+                                UnitAmount = priceAsInteger,
+                                Currency = currency // "gbp"
                             }
                         }
                     },
