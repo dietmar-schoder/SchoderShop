@@ -1,6 +1,5 @@
 using SchoderChain;
 using SchoderShop.DAL;
-using System.Threading.Tasks;
 
 namespace SchoderShop.BLL.StripeCallback
 {

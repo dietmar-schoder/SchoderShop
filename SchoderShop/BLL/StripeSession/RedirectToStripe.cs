@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SchoderChain;
 using SchoderShop.Helpers;
-using System.Threading.Tasks;
 
 namespace SchoderShop.BLL.StripeSession
 {

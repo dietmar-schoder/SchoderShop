@@ -62,8 +62,6 @@ namespace SchoderShopUnitTests.BLL.StripeSession
 
             // Then I expect the Stripe parameters to contain the correct values
             Assert.AreEqual(isTest ? StripeSecrets.STRIPE_APIKEY_TEST : StripeSecrets.STRIPE_APIKEY_LIVE, StripeConfiguration.ApiKey);
-            Assert.AreEqual($"{(isTest ? Constants.MYHOMEPAGE_URL_TEST : Constants.MYHOMEPAGE_URL_LIVE)}{"Shop/Index"}", stripeData.CancelUrl);
-            Assert.AreEqual($"{(isTest ? Constants.MYHOMEPAGE_URL_TEST : Constants.MYHOMEPAGE_URL_LIVE)}{"Shop/OrderThankYou"}", stripeData.SuccessUrl);
         }
 
         [TestMethod]

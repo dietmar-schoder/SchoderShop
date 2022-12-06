@@ -31,12 +31,11 @@ namespace SchoderShop.BLL.StripeSession
                     productId: _stripeData.Product.Id,
                     name: _stripeData.Product.Title,
                     description: _stripeData.Product.ShortDescription ?? _stripeData.Product.Title,
-                    imageFile: _stripeData.Product.ImageFileName,
+                    imageFileUrl: _stripeData.Product.ImageFileUrl,
                     priceAsInteger: _stripeData.Product.PriceAsInteger,
                     currency: _stripeData.Currency,
                     quantity: _stripeData.Quantity,
                     dateTime: _dateTimeFactory.UtcNow,
-                    schoderUrl: Constants.MYHOMEPAGE_URL_LIVE,
                     cancelUrl: _stripeData.CancelUrl,
                     successUrl: _stripeData.SuccessUrl
                 );
@@ -47,8 +46,7 @@ namespace SchoderShop.BLL.StripeSession
                 string name,
                 string description,
                 Guid productId,
-                string schoderUrl,
-                string imageFile,
+                string imageFileUrl,
                 long? priceAsInteger,
                 string currency,
                 string cancelUrl,
@@ -70,7 +68,7 @@ namespace SchoderShop.BLL.StripeSession
                                     Name = name,
                                     Description = description,
                                     Metadata = new Dictionary<string, string> { { "product_id", productId.ToString() } },
-                                    Images = new List<string> { $@"{schoderUrl}img/{imageFile}" }
+                                    Images = new List<string> { imageFileUrl }
                                 },
                                 UnitAmount = priceAsInteger,
                                 Currency = currency // "gbp"

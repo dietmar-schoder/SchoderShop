@@ -12,7 +12,7 @@ namespace SchoderShopUnitTests.TestModels
         public Guid Id { get; set; }
         public string Title { get; set; }
         public string ShortDescription { get; set; }
-        public string ImageFileName { get; set; }
+        public string ImageFileUrl { get; set; }
         public int PriceAsInteger { get; set; }
         public string Currency { get; set; }
     }

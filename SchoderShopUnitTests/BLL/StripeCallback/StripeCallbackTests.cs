@@ -3,7 +3,6 @@ using Moq;
 using SchoderChain;
 using SchoderShop.BLL;
 using SchoderShop.BLL.StripeCallback;
-using SchoderShop.BLL.StripeSession;
 using SchoderShop.DAL;
 using SchoderShop.Helpers;
 using SchoderShopUnitTests.TestHelpers;

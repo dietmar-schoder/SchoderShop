@@ -8,7 +8,7 @@
 
         string ShortDescription { get; set; }
 
-        string ImageFileName { get; set; }
+        string ImageFileUrl { get; set; }
 
         int PriceAsInteger { get; set; }
 
