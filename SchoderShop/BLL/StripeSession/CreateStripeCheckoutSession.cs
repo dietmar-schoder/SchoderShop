@@ -27,7 +27,7 @@ namespace SchoderShop.BLL.StripeSession
             {
                 return GetStripeSessionCreateOptions
                 (
-                    customerEmail: _stripeData.Email, //_stripeData.Account?.Email ?? _stripeData.Email,
+                    customerEmail: _stripeData.Email,
                     productId: _stripeData.Product.Id,
                     name: _stripeData.Product.Title,
                     description: _stripeData.Product.ShortDescription ?? _stripeData.Product.Title,
