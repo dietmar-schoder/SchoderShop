@@ -10,8 +10,8 @@ namespace SchoderShop.BLL.StripeCallback
         private readonly StripeData _stripeData;
         private readonly IStripeEventUtility _stripeEventUtility;
 
-        public ConvertStripeCallbackJson(IStripeEventUtility stripeEventUtility, StripeData stripeData, ChainData chainData, ISlackManager slackManager)
-            : base(chainData, slackManager)
+        public ConvertStripeCallbackJson(IStripeEventUtility stripeEventUtility, StripeData stripeData, ISlackManager slackManager)
+            : base(slackManager)
         {
             _stripeData = stripeData;
             _stripeEventUtility = stripeEventUtility;

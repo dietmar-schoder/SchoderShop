@@ -6,8 +6,8 @@ namespace SchoderShop.BLL.StripeCallback
     {
         private readonly StripeData _stripeData;
 
-        public ProcessStripePayment(StripeData stripeData, ChainData chainData, ISlackManager slackManager)
-            : base(chainData, slackManager) => _stripeData = stripeData;
+        public ProcessStripePayment(StripeData stripeData, ISlackManager slackManager)
+            : base(slackManager) => _stripeData = stripeData;
 
         protected override async Task<bool> ProcessOkAsync()
         {

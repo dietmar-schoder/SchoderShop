@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using SchoderShop.Models;
 using Stripe.Checkout;
 
@@ -31,5 +32,7 @@ namespace SchoderShop.BLL
         public HttpResponse HttpResponse { get; set; }
 
         public string StripeEventType { get; set; }
+
+        public IActionResult ActionResult { get; set; }
     }
 }

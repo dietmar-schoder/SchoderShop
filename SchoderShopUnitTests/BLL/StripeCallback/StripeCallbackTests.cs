@@ -23,14 +23,13 @@ namespace SchoderShopUnitTests.BLL.StripeCallback
             byte[] byteArray = Encoding.ASCII.GetBytes(testJson);
             httpContext.Request.Body = new MemoryStream(byteArray);
             var stripeData = new StripeData { HttpRequest = httpContext.Request };
-            var chainData = new ChainData();
             var mockSlackManager = new Mock<ISlackManager>();
             var mockStripeCallbackAccessor = new Mock<IStripeCallbackAccessor>();
             mockStripeCallbackAccessor.Setup(m => m.InsertAsync(It.IsAny<string>())).Verifiable();
-            var processor = new InsertStripeCallback(mockStripeCallbackAccessor.Object, stripeData, chainData, mockSlackManager.Object);
+            var processor = new InsertStripeCallback(mockStripeCallbackAccessor.Object, stripeData, mockSlackManager.Object);
 
             // When I run the processor
-            await new Chain(chainData, new List<IProcessor> { processor }).ProcessAsync(string.Empty, typeof(InsertStripeCallback));
+            await new Chain(new List<IProcessor> { processor }).ProcessAsync(string.Empty, typeof(InsertStripeCallback));
 
             // Then I expect the StripeCallbackAccessor.AddStripeCallbackAsync to be called with the Stripe Json callback content
             mockStripeCallbackAccessor.Verify(m => m.InsertAsync(It.Is<string>(s => s.Equals(testJson))), Times.Once);
@@ -49,17 +48,16 @@ namespace SchoderShopUnitTests.BLL.StripeCallback
                 StripeCheckoutSession = testStripeCheckoutSession,
                 StripeEventType = testStripeEventType
             };
-            var chainData = new ChainData();
             var mockSlackManager = new Mock<ISlackManager>();
             var mockDateTimeFactory = new Mock<IDateTimeFactory>();
             mockDateTimeFactory.Setup(m => m.UtcNow).Returns(TestData.TestDateTime);
             var mockStripeSessionAccessor = new Mock<IStripeSessionAccessor>();
             mockStripeSessionAccessor.Setup(m => m.UpdateEventTypeAsync(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
-            var processor = new UpdateStripeSession(mockStripeSessionAccessor.Object, stripeData, chainData, mockSlackManager.Object);
-            var processor2 = new TestProcessor(chainData, mockSlackManager.Object);
+            var processor = new UpdateStripeSession(mockStripeSessionAccessor.Object, stripeData, mockSlackManager.Object);
+            var processor2 = new TestProcessor(mockSlackManager.Object);
 
             // When I run the processor with a successor
-            await new Chain(chainData, new List<IProcessor> { processor, processor2 }).ProcessAsync(string.Empty,
+            var result = await new Chain(new List<IProcessor> { processor, processor2 }).ProcessAsync(string.Empty,
                 typeof(UpdateStripeSession),
                 typeof(TestProcessor));
 
@@ -70,7 +68,7 @@ namespace SchoderShopUnitTests.BLL.StripeCallback
                 ), Times.Once);
 
             // And I expect the second processor to be called
-            Assert.AreEqual(nameof(TestProcessor), chainData.StackTrace.Last());
+            Assert.AreEqual(nameof(TestProcessor), result.StackTrace.Last());
         }
     }
 }

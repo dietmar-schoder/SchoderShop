@@ -4,7 +4,7 @@ namespace SchoderShopUnitTests.TestHelpers
 {
     public class TestProcessor : Processor
     {
-        public TestProcessor(ChainData chainData, ISlackManager slackManager) : base(chainData, slackManager) { }
+        public TestProcessor(ISlackManager slackManager) : base(slackManager) { }
 
 #pragma warning disable 1998
         protected override async Task<bool> ProcessOkAsync()

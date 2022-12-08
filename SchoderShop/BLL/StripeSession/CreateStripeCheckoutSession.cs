@@ -9,8 +9,8 @@ namespace SchoderShop.BLL.StripeSession
         private readonly IDateTimeFactory _dateTimeFactory;
         private readonly StripeData _stripeData;
 
-        public CreateStripeCheckoutSession(IDateTimeFactory dateTimeFactory, StripeData stripeData, ChainData chainData, ISlackManager slackManager)
-            : base(chainData, slackManager)
+        public CreateStripeCheckoutSession(IDateTimeFactory dateTimeFactory, StripeData stripeData, ISlackManager slackManager)
+            : base(slackManager)
         {
             _dateTimeFactory = dateTimeFactory;
             _stripeData = stripeData;

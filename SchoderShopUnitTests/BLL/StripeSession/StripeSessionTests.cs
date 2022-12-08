@@ -26,15 +26,14 @@ namespace SchoderShopUnitTests.BLL.StripeSession
             var testProductId = TestData.TestGuid;
             var testProduct = new TestProduct { Id = testProductId };
             var stripeData = new StripeData { ProductId = testProduct.Id };
-            var chainData = new ChainData();
             var mockSlackManager = new Mock<ISlackManager>();
             var mockProductAccessor = new Mock<IProductAccessor>();
             mockProductAccessor.Setup(m => m.GetAsync(It.IsAny<Guid>())).ReturnsAsync(productIsFound ? testProduct : null);
-            var processor = new GetProduct(mockProductAccessor.Object, stripeData, chainData, mockSlackManager.Object);
-            var processor2 = new TestProcessor(chainData, mockSlackManager.Object);
+            var processor = new GetProduct(mockProductAccessor.Object, stripeData, mockSlackManager.Object);
+            var processor2 = new TestProcessor(mockSlackManager.Object);
 
             // When I run the processor with a successor
-            await new Chain(chainData, new List<IProcessor> { processor, processor2 }).ProcessAsync(string.Empty,
+            var result = await new Chain(new List<IProcessor> { processor, processor2 }).ProcessAsync(string.Empty,
                 typeof(GetProduct),
                 typeof(TestProcessor));
 
@@ -42,7 +41,7 @@ namespace SchoderShopUnitTests.BLL.StripeSession
             mockProductAccessor.Verify(m => m.GetAsync(It.Is<Guid>(s => s.Equals(testProductId))), Times.Once);
 
             // And I expect the second processor to be called if a product id was found
-            Assert.AreEqual(productIsFound ? nameof(TestProcessor) : nameof(GetProduct), chainData.StackTrace.Last());
+            Assert.AreEqual(productIsFound ? nameof(TestProcessor) : nameof(GetProduct), result.StackTrace.Last());
         }
 
         [DataTestMethod]
@@ -53,12 +52,11 @@ namespace SchoderShopUnitTests.BLL.StripeSession
         {
             // Given I have a SetStripeUrls processor with mocked injections
             var stripeData = new StripeData { IsTest = isTest }; // !!!! new ShopData { IsDonation = isDonation };
-            var chainData = new ChainData();
             var mockSlackManager = new Mock<ISlackManager>();
-            var processor = new SetStripeParameters(stripeData, chainData, mockSlackManager.Object);
+            var processor = new SetStripeParameters(stripeData, mockSlackManager.Object);
 
             // When I run the processor
-            await new Chain(chainData, new List<IProcessor> { processor }).ProcessAsync(string.Empty, typeof(SetStripeParameters));
+            var result = await new Chain(new List<IProcessor> { processor }).ProcessAsync(string.Empty, typeof(SetStripeParameters));
 
             // Then I expect the Stripe parameters to contain the correct values
             Assert.AreEqual(isTest ? StripeSecrets.STRIPE_APIKEY_TEST : StripeSecrets.STRIPE_APIKEY_LIVE, StripeConfiguration.ApiKey);
@@ -90,7 +88,6 @@ namespace SchoderShopUnitTests.BLL.StripeSession
                 Product = testProduct,
                 StripeCheckoutSession = testStripeCheckoutSession
             };
-            var chainData = new ChainData();
             var mockSlackManager = new Mock<ISlackManager>();
             var mockDateTimeFactory = new Mock<IDateTimeFactory>();
             mockDateTimeFactory.Setup(m => m.UtcNow).Returns(TestData.TestDateTime);
@@ -104,11 +101,11 @@ namespace SchoderShopUnitTests.BLL.StripeSession
                 It.IsAny<DateTime>(),
                 It.IsAny<DateTime>()
                 )).Verifiable();
-            var processor = new InsertStripeSession(mockStripeSessionAccessor.Object, mockDateTimeFactory.Object, stripeData, chainData, mockSlackManager.Object);
-            var processor2 = new TestProcessor(chainData, mockSlackManager.Object);
+            var processor = new InsertStripeSession(mockStripeSessionAccessor.Object, mockDateTimeFactory.Object, stripeData, mockSlackManager.Object);
+            var processor2 = new TestProcessor(mockSlackManager.Object);
 
             // When I run the processor with a successor
-            await new Chain(chainData, new List<IProcessor> { processor, processor2 }).ProcessAsync(string.Empty,
+            var result = await new Chain(new List<IProcessor> { processor, processor2 }).ProcessAsync(string.Empty,
                 typeof(InsertStripeSession),
                 typeof(TestProcessor));
 
@@ -124,7 +121,7 @@ namespace SchoderShopUnitTests.BLL.StripeSession
                 Times.Once);
 
             // And I expect the second processor to be called
-            Assert.AreEqual(nameof(TestProcessor), chainData.StackTrace.Last());
+            Assert.AreEqual(nameof(TestProcessor), result.StackTrace.Last());
         }
 
         [TestMethod]
@@ -138,13 +135,12 @@ namespace SchoderShopUnitTests.BLL.StripeSession
                 HttpResponse = httpContext.Response,
                 StripeCheckoutSession = new Session { Url = testStripeCheckoutSessionUrl }
             };
-            var chainData = new ChainData();
             var mockSlackManager = new Mock<ISlackManager>();
-            var processor = new RedirectToStripe(stripeData, chainData, mockSlackManager.Object);
-            var processor2 = new TestProcessor(chainData, mockSlackManager.Object);
+            var processor = new RedirectToStripe(stripeData, mockSlackManager.Object);
+            var processor2 = new TestProcessor(mockSlackManager.Object);
 
             // When I run the processor with a successor
-            await new Chain(chainData, new List<IProcessor> { processor, processor2 }).ProcessAsync(string.Empty,
+            var result = await new Chain(new List<IProcessor> { processor, processor2 }).ProcessAsync(string.Empty,
                 typeof(RedirectToStripe),
                 typeof(TestProcessor));
 
@@ -152,10 +148,10 @@ namespace SchoderShopUnitTests.BLL.StripeSession
             Assert.AreEqual(testStripeCheckoutSessionUrl, stripeData.HttpResponse.Headers[StripeSecrets.HEADER_STRIPE_REDIRECT].Single());
 
             // And I expect the chaindata to contain the correct actionresult
-            Assert.AreEqual(new StatusCodeResult(303).StatusCode, (chainData.ActionResult as StatusCodeResult).StatusCode);
+            Assert.AreEqual(new StatusCodeResult(303).StatusCode, (stripeData.ActionResult as StatusCodeResult).StatusCode);
 
             // And I expect the second processor to be called
-            Assert.AreEqual(nameof(TestProcessor), chainData.StackTrace.Last());
+            Assert.AreEqual(nameof(TestProcessor), result.StackTrace.Last());
         }
 
         [DataTestMethod]
@@ -181,16 +177,15 @@ namespace SchoderShopUnitTests.BLL.StripeSession
                 HttpRequest = httpContext.Request,
                 IsTest = isTest
             };
-            var chainData = new ChainData();
 
             // And I have a ConvertStripeCallbackJson processor with mocked injections
             var mockSlackManager = new Mock<ISlackManager>();
             var mockStripeEventUtility = new Mock<IStripeEventUtility>();
             mockStripeEventUtility.Setup(m => m.ConstructEvent(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(testEvent);
-            var processor = new ConvertStripeCallbackJson(mockStripeEventUtility.Object, stripeData, chainData, mockSlackManager.Object);
+            var processor = new ConvertStripeCallbackJson(mockStripeEventUtility.Object, stripeData, mockSlackManager.Object);
 
             // When I run the processor
-            await new Chain(chainData, new List<IProcessor> { processor }).ProcessAsync(string.Empty, typeof(ConvertStripeCallbackJson));
+            var result = await new Chain(new List<IProcessor> { processor }).ProcessAsync(string.Empty, typeof(ConvertStripeCallbackJson));
 
             // Then I expect the Stripe EventType and CheckoutSession to contain the correct values
             Assert.AreEqual(testType, stripeData.StripeEventType);
@@ -204,7 +199,7 @@ namespace SchoderShopUnitTests.BLL.StripeSession
                 Times.Once);
 
             // And I expect the chainData exception to be null
-            Assert.IsNull(chainData.Exception);
+            Assert.IsNull(result.Exception);
         }
     }
 }

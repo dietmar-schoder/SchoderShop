@@ -8,8 +8,8 @@ namespace SchoderShop.BLL.StripeCallback
         private readonly IStripeSessionAccessor _stripeSessionAccessor;
         private readonly StripeData _stripeData;
 
-        public UpdateStripeSession(IStripeSessionAccessor stripeSessionAccessor, StripeData stripeData, ChainData chainData, ISlackManager slackManager)
-            : base(chainData, slackManager)
+        public UpdateStripeSession(IStripeSessionAccessor stripeSessionAccessor, StripeData stripeData, ISlackManager slackManager)
+            : base(slackManager)
         {
             _stripeSessionAccessor = stripeSessionAccessor;
             _stripeData = stripeData;

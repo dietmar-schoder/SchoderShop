@@ -8,8 +8,8 @@ namespace SchoderShop.BLL.StripeCallback
         private readonly IStripeCallbackAccessor _stripeCallbackAccessor;
         private readonly StripeData _stripeData;
 
-        public InsertStripeCallback(IStripeCallbackAccessor stripeCallbackAccessor, StripeData stripeData, ChainData chainData, ISlackManager slackManager)
-            : base(chainData, slackManager)
+        public InsertStripeCallback(IStripeCallbackAccessor stripeCallbackAccessor, StripeData stripeData, ISlackManager slackManager)
+            : base(slackManager)
         {
             _stripeCallbackAccessor = stripeCallbackAccessor;
             _stripeData = stripeData;

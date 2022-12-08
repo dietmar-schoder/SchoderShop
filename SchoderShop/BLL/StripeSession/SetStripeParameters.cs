@@ -8,8 +8,8 @@ namespace SchoderShop.BLL.StripeSession
     {
         private readonly StripeData _stripeData;
 
-        public SetStripeParameters(StripeData stripeData, ChainData chainData, ISlackManager slackManager)
-            : base(chainData, slackManager) => _stripeData = stripeData;
+        public SetStripeParameters(StripeData stripeData, ISlackManager slackManager)
+            : base(slackManager) => _stripeData = stripeData;
 
 #pragma warning disable 1998
         protected override async Task<bool> ProcessOkAsync()

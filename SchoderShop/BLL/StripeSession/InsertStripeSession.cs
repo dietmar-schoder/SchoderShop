@@ -14,9 +14,8 @@ namespace SchoderShop.BLL.StripeSession
             IStripeSessionAccessor stripeSessionAccessor,
             IDateTimeFactory dateTimeFactory,
             StripeData stripeData,
-            ChainData chainData,
             ISlackManager slackManager)
-            : base(chainData, slackManager)
+            : base(slackManager)
         {
             _stripeSessionAccessor = stripeSessionAccessor;
             _dateTimeFactory = dateTimeFactory;
