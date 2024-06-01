@@ -8,12 +8,18 @@ namespace SchoderShop.BLL.StripeCallback
     public class ConvertStripeCallbackJson : Processor
     {
         private readonly StripeData _stripeData;
+        private readonly IStripeSecrets _stripeSecrets;
         private readonly IStripeEventUtility _stripeEventUtility;
 
-        public ConvertStripeCallbackJson(IStripeEventUtility stripeEventUtility, StripeData stripeData, ISlackManager slackManager)
+        public ConvertStripeCallbackJson(
+            IStripeEventUtility stripeEventUtility,
+            StripeData stripeData,
+            IStripeSecrets stripeSecrets,
+            ISlackManager slackManager)
             : base(slackManager)
         {
             _stripeData = stripeData;
+            _stripeSecrets = stripeSecrets;
             _stripeEventUtility = stripeEventUtility;
         }
 
@@ -25,8 +31,8 @@ namespace SchoderShop.BLL.StripeCallback
             {
                 var stripeEvent = _stripeEventUtility.ConstructEvent(
                     _stripeData.StripeJson,
-                    _stripeData.HttpRequest.Headers[StripeSecrets.HEADER_STRIPE_SIGNATURE],
-                    _stripeData.IsTest ? StripeSecrets.STRIPE_SECRET_TEST : StripeSecrets.STRIPE_SECRET_LIVE);
+                    _stripeData.HttpRequest.Headers[Constants.HEADER_STRIPE_SIGNATURE],
+                    _stripeData.IsTest ? _stripeSecrets.STRIPE_SECRET_TEST : _stripeSecrets.STRIPE_SECRET_LIVE);
 
                 _stripeData.StripeEventType = stripeEvent.Type;
                 _stripeData.StripeCheckoutSession = stripeEvent.Data.Object as Session;

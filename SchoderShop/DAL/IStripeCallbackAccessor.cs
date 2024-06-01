@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace SchoderShop.DAL
+﻿namespace SchoderShop.DAL
 {
     public interface IStripeCallbackAccessor
     {

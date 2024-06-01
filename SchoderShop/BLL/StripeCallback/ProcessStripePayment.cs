@@ -14,11 +14,11 @@ namespace SchoderShop.BLL.StripeCallback
             var slackMessage = $"Stripe callback: {_stripeData.StripeEventType}{Environment.NewLine}{_stripeData.StripeJson}";
             if (_stripeData.IsTest)
             {
-                await _slackManager.SlackTestMessageAsync(slackMessage);
+                await _slackManager.SlackErrorChainResultAsync(_chainResult);
             }
             else
             {
-                await _slackManager.SlackShopMessageAsync(slackMessage);
+                await _slackManager.SlackErrorChainResultAsync(_chainResult);
             }
             //await _slackManager.SlackShopMessageAsync($"PRODUCT SOLD!{Environment.NewLine}" +
             //    $"{parameters.Account?.Email ?? "anonymous"}{Environment.NewLine}" +

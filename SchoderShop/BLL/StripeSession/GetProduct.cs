@@ -8,8 +8,7 @@ namespace SchoderShop.BLL.StripeSession
         private readonly IProductAccessor _productAccessor;
         private readonly StripeData _stripeData;
 
-        public GetProduct(IProductAccessor productAccessor, StripeData stripeData, ISlackManager slackManager)
-            : base(slackManager)
+        public GetProduct(IProductAccessor productAccessor, StripeData stripeData, ISlackManager slackManager) : base(slackManager)
         {
             _productAccessor = productAccessor;
             _stripeData = stripeData;

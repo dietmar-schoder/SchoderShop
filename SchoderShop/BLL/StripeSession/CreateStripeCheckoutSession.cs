@@ -1,20 +1,13 @@
 using SchoderChain;
-using SchoderShop.Helpers;
 using Stripe.Checkout;
 
 namespace SchoderShop.BLL.StripeSession
 {
     public class CreateStripeCheckoutSession : Processor
     {
-        private readonly IDateTimeFactory _dateTimeFactory;
         private readonly StripeData _stripeData;
 
-        public CreateStripeCheckoutSession(IDateTimeFactory dateTimeFactory, StripeData stripeData, ISlackManager slackManager)
-            : base(slackManager)
-        {
-            _dateTimeFactory = dateTimeFactory;
-            _stripeData = stripeData;
-        }
+        public CreateStripeCheckoutSession(StripeData stripeData, ISlackManager slackManager) : base(slackManager) => _stripeData = stripeData;
 
 #pragma warning disable 1998
         protected override async Task<bool> ProcessOkAsync()
@@ -33,9 +26,9 @@ namespace SchoderShop.BLL.StripeSession
                     description: _stripeData.Product.ShortDescription ?? _stripeData.Product.Title,
                     imageFileUrl: _stripeData.Product.ImageFileUrl,
                     priceAsInteger: _stripeData.Product.PriceAsInteger,
-                    currency: _stripeData.Currency,
+                    currency: _stripeData.Product.Currency,
                     quantity: _stripeData.Quantity,
-                    dateTime: _dateTimeFactory.UtcNow,
+                    dateTime: _stripeData.CreatedDateTime,
                     cancelUrl: _stripeData.CancelUrl,
                     successUrl: _stripeData.SuccessUrl
                 );
@@ -71,7 +64,7 @@ namespace SchoderShop.BLL.StripeSession
                                     Images = new List<string> { imageFileUrl }
                                 },
                                 UnitAmount = priceAsInteger,
-                                Currency = currency // "gbp"
+                                Currency = currency
                             }
                         }
                     },
@@ -80,7 +73,7 @@ namespace SchoderShop.BLL.StripeSession
                     CancelUrl = cancelUrl,
                     SuccessUrl = successUrl,
                     CustomerEmail = customerEmail,
-                    ExpiresAt = dateTime.AddMinutes(30) // 60
+                    ExpiresAt = dateTime.AddMinutes(30)
                 };
             }
         }

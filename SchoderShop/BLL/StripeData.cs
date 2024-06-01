@@ -7,6 +7,8 @@ namespace SchoderShop.BLL
 {
     public class StripeData
     {
+        public DateTime CreatedDateTime { get; set; }
+
         public bool IsTest { get; set; }
 
         public string Email { get; set; }

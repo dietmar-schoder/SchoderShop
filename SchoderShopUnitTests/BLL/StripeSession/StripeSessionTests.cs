@@ -52,14 +52,15 @@ namespace SchoderShopUnitTests.BLL.StripeSession
         {
             // Given I have a SetStripeUrls processor with mocked injections
             var stripeData = new StripeData { IsTest = isTest }; // !!!! new ShopData { IsDonation = isDonation };
+            var stripeSecrets = new TestStripeSecrets();
             var mockSlackManager = new Mock<ISlackManager>();
-            var processor = new SetStripeParameters(stripeData, mockSlackManager.Object);
+            var processor = new SetStripeParameters(stripeData, stripeSecrets, mockSlackManager.Object);
 
             // When I run the processor
             var result = await new Chain(new List<IProcessor> { processor }).ProcessAsync(string.Empty, typeof(SetStripeParameters));
 
             // Then I expect the Stripe parameters to contain the correct values
-            Assert.AreEqual(isTest ? StripeSecrets.STRIPE_APIKEY_TEST : StripeSecrets.STRIPE_APIKEY_LIVE, StripeConfiguration.ApiKey);
+            Assert.AreEqual(isTest ? "sk_test_" : "sk_live_", StripeConfiguration.ApiKey);
         }
 
         [TestMethod]
@@ -85,12 +86,11 @@ namespace SchoderShopUnitTests.BLL.StripeSession
 
             var stripeData = new StripeData
             {
+                CreatedDateTime = TestData.TestDateTime,
                 Product = testProduct,
                 StripeCheckoutSession = testStripeCheckoutSession
             };
             var mockSlackManager = new Mock<ISlackManager>();
-            var mockDateTimeFactory = new Mock<IDateTimeFactory>();
-            mockDateTimeFactory.Setup(m => m.UtcNow).Returns(TestData.TestDateTime);
             var mockStripeSessionAccessor = new Mock<IStripeSessionAccessor>();
             mockStripeSessionAccessor.Setup(m => m.InsertAsync(
                 It.IsAny<string>(),
@@ -101,7 +101,7 @@ namespace SchoderShopUnitTests.BLL.StripeSession
                 It.IsAny<DateTime>(),
                 It.IsAny<DateTime>()
                 )).Verifiable();
-            var processor = new InsertStripeSession(mockStripeSessionAccessor.Object, mockDateTimeFactory.Object, stripeData, mockSlackManager.Object);
+            var processor = new InsertStripeSession(mockStripeSessionAccessor.Object, stripeData, mockSlackManager.Object);
             var processor2 = new TestProcessor(mockSlackManager.Object);
 
             // When I run the processor with a successor
@@ -145,7 +145,7 @@ namespace SchoderShopUnitTests.BLL.StripeSession
                 typeof(TestProcessor));
 
             // Then I expect the shopdata response header to contain the correct location stripe url
-            Assert.AreEqual(testStripeCheckoutSessionUrl, stripeData.HttpResponse.Headers[StripeSecrets.HEADER_STRIPE_REDIRECT].Single());
+            Assert.AreEqual(testStripeCheckoutSessionUrl, stripeData.HttpResponse.Headers[Constants.HEADER_STRIPE_REDIRECT].Single());
 
             // And I expect the chaindata to contain the correct actionresult
             Assert.AreEqual(new StatusCodeResult(303).StatusCode, (stripeData.ActionResult as StatusCodeResult).StatusCode);
@@ -170,19 +170,20 @@ namespace SchoderShopUnitTests.BLL.StripeSession
                 Data = new EventData { Object = testCheckoutSession }
             };
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers.Add(StripeSecrets.HEADER_STRIPE_SIGNATURE, "testSignature");
+            httpContext.Request.Headers.Add(Constants.HEADER_STRIPE_SIGNATURE, "testSignature");
             var stripeData = new StripeData
             {
                 StripeJson = testJson,
                 HttpRequest = httpContext.Request,
                 IsTest = isTest
             };
+            var stripeSecrets = new TestStripeSecrets();
 
             // And I have a ConvertStripeCallbackJson processor with mocked injections
             var mockSlackManager = new Mock<ISlackManager>();
             var mockStripeEventUtility = new Mock<IStripeEventUtility>();
             mockStripeEventUtility.Setup(m => m.ConstructEvent(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(testEvent);
-            var processor = new ConvertStripeCallbackJson(mockStripeEventUtility.Object, stripeData, mockSlackManager.Object);
+            var processor = new ConvertStripeCallbackJson(mockStripeEventUtility.Object, stripeData, stripeSecrets, mockSlackManager.Object);
 
             // When I run the processor
             var result = await new Chain(new List<IProcessor> { processor }).ProcessAsync(string.Empty, typeof(ConvertStripeCallbackJson));
@@ -194,8 +195,8 @@ namespace SchoderShopUnitTests.BLL.StripeSession
             // And I expect StripeEventUtility.ConstructEvent to be called once with the correct parameters
             mockStripeEventUtility.Verify(m => m.ConstructEvent(
                 It.Is<string>(s => s.Equals(testJson)),
-                It.Is<string>(s => s.Equals(httpContext.Request.Headers[StripeSecrets.HEADER_STRIPE_SIGNATURE])),
-                It.Is<string>(s => s.Equals(isTest ? StripeSecrets.STRIPE_SECRET_LIVE : StripeSecrets.STRIPE_SECRET_TEST))),
+                It.Is<string>(s => s.Equals(httpContext.Request.Headers[Constants.HEADER_STRIPE_SIGNATURE])),
+                It.Is<string>(s => s.Equals(isTest ? "whsec_TEST" : "whsec_LIVE"))),
                 Times.Once);
 
             // And I expect the chainData exception to be null

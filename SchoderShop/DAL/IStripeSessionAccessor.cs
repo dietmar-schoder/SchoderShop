@@ -1,5 +1,4 @@
 ﻿using SchoderShop.Models;
-using System.Threading.Tasks;
 
 namespace SchoderShop.DAL
 {

@@ -49,8 +49,6 @@ namespace SchoderShopUnitTests.BLL.StripeCallback
                 StripeEventType = testStripeEventType
             };
             var mockSlackManager = new Mock<ISlackManager>();
-            var mockDateTimeFactory = new Mock<IDateTimeFactory>();
-            mockDateTimeFactory.Setup(m => m.UtcNow).Returns(TestData.TestDateTime);
             var mockStripeSessionAccessor = new Mock<IStripeSessionAccessor>();
             mockStripeSessionAccessor.Setup(m => m.UpdateEventTypeAsync(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
             var processor = new UpdateStripeSession(mockStripeSessionAccessor.Object, stripeData, mockSlackManager.Object);
